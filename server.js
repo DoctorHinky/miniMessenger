@@ -89,7 +89,7 @@ wss.on("connection", (ws) => {
         }
         break;
       case "NORMAL_MESSAGE":
-        clients = clients
+        clients
           .filter((client) => client.ws.readyState === WebSocket.OPEN)
           .forEach((client) => {
             client.ws.send(
@@ -119,11 +119,12 @@ wss.on("connection", (ws) => {
       clients = clients.filter((client) => client.clientId !== "Host");
 
       if (clients.length > 0) {
-        const newHost = clients.filter(
+        const openClients = clients.filter(
           (client) => client.ws.readyState === WebSocket.OPEN
         );
-        if (newHost) {
-          clients[0].ws.send(
+        if (openClients.length > 0) {
+          openClients[0].clientId = "Host";
+          openClients[0].ws.send(
             JSON.stringify({
               type: "NEW_HOST",
               message: "Neuer Host",
