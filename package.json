@@ -1,0 +1,22 @@
+{
+  "name": "minimsg",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Norman R. Tetzlaff",
+  "license": "ISC",
+  "description": "Es ist der Server für einen annonymen Chat",
+  "keywords": [
+    "chat",
+    "server",
+    "websocket",
+    "anonymous"
+  ],
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "ws": "^8.18.0"
+  }
+}
