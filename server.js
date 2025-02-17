@@ -89,16 +89,17 @@ wss.on("connection", (ws) => {
         }
         break;
       case "NORMAL_MESSAGE":
-        clients.filter((client) => client.ws.readyState === WebSocket.OPEN);
-        clients.forEach((client) => {
-          client.ws.send(
-            JSON.stringify({
-              type: "NORMAL_MESSAGE",
-              message: data.message,
-              clientId: clientId,
-            })
-          );
-        });
+        clients = clients
+          .filter((client) => client.ws.readyState === WebSocket.OPEN)
+          .forEach((client) => {
+            client.ws.send(
+              JSON.stringify({
+                type: "NORMAL_MESSAGE",
+                message: data.message,
+                clientId: clientId,
+              })
+            );
+          });
         break;
 
       default:
