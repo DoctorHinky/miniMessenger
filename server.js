@@ -3,7 +3,7 @@ import WebSocket, { WebSocketServer } from "ws";
 import dotenv from "dotenv";
 dotenv.config();
 
-import { log, error } from "console";
+import { log, error, warn } from "console";
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -12,6 +12,7 @@ const server = app.listen(PORT, () => log(`Server is running on port ${PORT}`));
 const wss = new WebSocketServer({ server });
 
 let clients = [];
+let clientIDS = [];
 let lobbyLocked = false;
 
 wss.on("connection", (ws) => {
@@ -28,9 +29,10 @@ wss.on("connection", (ws) => {
     }, 100);
     return;
   }
-  const clientId =
-    clients.length === 0 ? "Host" : `Client${clients.length + 1}`;
+  const clientId = clients.length === 0 ? "Host" : `Client${clients.length}`;
   clients.push({ ws, clientId });
+  clientIDS.push(clientId);
+  log(clientIDS);
 
   ws.send(
     JSON.stringify({
@@ -54,17 +56,24 @@ wss.on("connection", (ws) => {
       error("Ungültige Nachricht", err);
       return;
     }
+    log("Data im Backend", data);
 
     switch (data.type) {
       case "LOCK_LOBBY":
-        if (data.clientId === "Host") {
+        const locking = data.payload; // es ist das payload Objekt
+        if (locking.clientId === "Host") {
           lobbyLocked = true;
         }
+        log("locked: ", lobbyLocked);
+        log("will locken", locking.clientId);
         break;
       case "UNLOCK_LOBBY":
-        if (data.clientId === "Host") {
+        const unlocking = data.payload;
+        if (unlocking.clientId === "Host") {
           lobbyLocked = false;
         }
+
+        log("LObby locked=: ", lobbyLocked);
         break;
 
       case "PRIVATE_MESSAGE":
@@ -89,17 +98,21 @@ wss.on("connection", (ws) => {
         }
         break;
       case "NORMAL_MESSAGE":
+        const messageData = data.payload;
+        log("Normal Message Backend", messageData.message);
+
         clients
           .filter((client) => client.ws.readyState === WebSocket.OPEN)
           .forEach((client) => {
             client.ws.send(
               JSON.stringify({
                 type: "NORMAL_MESSAGE",
-                message: data.message,
+                message: messageData.message,
                 clientId: clientId,
               })
             );
           });
+        log("Normal Message", messageData.message);
         break;
 
       default:
