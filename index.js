@@ -30,6 +30,7 @@ wss.on("connection", (ws) => {
     return;
   }
   const clientId = clients.length === 0 ? "Host" : `Client${clients.length}`;
+  clients = clients.filter((client) => client.ws.readyState === WebSocket.OPEN);
   clients.push({ ws, clientId });
   clientIDS.push(clientId);
   log(clientIDS);
@@ -128,6 +129,7 @@ wss.on("connection", (ws) => {
 
   ws.on("close", () => {
     log(`Client ${clientId} hat die Verbindung getrennt`);
+
     if (clientId === "Host") {
       clients = clients.filter((client) => client.clientId !== "Host");
 
@@ -137,6 +139,7 @@ wss.on("connection", (ws) => {
         );
         if (openClients.length > 0) {
           openClients[0].clientId = "Host";
+          log("Neuer Host", openClients[0].clientId);
           openClients[0].ws.send(
             JSON.stringify({
               type: "NEW_HOST",
